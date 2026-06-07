@@ -1,0 +1,9 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "cargo metadata": true,
+        "ForEach-Object": true,
+        "Test-Path": true,
+        "cargo run": true,
+        "probe-rs": true
+    }
+}

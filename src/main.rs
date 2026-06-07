@@ -1,21 +1,19 @@
 #![no_std]
 #![no_main]
 
-// We import the panic handler for safety
-// use panic_halt as _;
-
-// We import the necessary Embassy components
+use defmt_rtt as _;
 use embassy_executor::Spawner;
-use embassy_stm32::Peripherals;
-use embassy_stm32::usart::{Config, Uart};
-use embassy_stm32::{bind_interrupts, usart};
-use embassy_stm32::timer::Timer;
+use embassy_nrf::peripherals;
+use embassy_nrf::uarte::{self, Config, Uarte};
+use embassy_nrf::bind_interrupts;
+use embassy_time::{Duration, Timer};
+use panic_probe as _;
 
 // 1. BIND INTERRUPTS
 // The UART hardware generates interrupts when transmission finishes.
-// We must link the specific peripheral (USART2) to the Embassy handler.
+// We must link the specific peripheral (UARTE1) to the Embassy handler.
 bind_interrupts!(struct Irqs {
-    USART2 => usart::InterruptHandler<Peripherals::USART2>;
+    UARTE1 => uarte::InterruptHandler<peripherals::UARTE1>;
 });
 
 // 2. DEFINE THE DATA
@@ -40,25 +38,20 @@ const LARGE_LOG_MESSAGE: &[u8] = b"This is a large string being sent over UART.
 ";
 
 #[embassy_executor::main]
-async fn main(spawner: Spawner) {
+async fn main(_spawner: Spawner) {
     // Initialize the microcontroller peripherals
-    let p = embassy_stm32::init(Default::default());
+    let p = embassy_nrf::init(Default::default());
 
     // 3. CONFIGURE THE UART WITH DMA
     // We set up the UART peripheral with the desired baud rate and settings.
-    let mut config = Config::default();
+    let config = Config::default();
 
-    // We initialize the UART peripheral, and set up DMA for transmission.
-    // Critical Step: we pass the DMA channels (DMA1_CH6 and DMA1_CH5).
-    // Without these arguments, the driver would fall back to interrupt-driven transmission
-    // By providing the DMA channels, we enable the Zero-Copy engine. 
-    let mut uart = Uart::new(
-        p.USART2, 
-        p.PA3, // RX pin
-        p.PA2, // TX pin
-        Irqs,  // Interrupts for USART2
-        p.DMA1_CH6, // DMA channel for TX
-        p.DMA1_CH5, // DMA channel for RX (not used in this example, but required for full UART functionality)
+    // We initialize the UARTE peripheral with RX/TX pins and interrupt binding.
+    let mut uart = Uarte::new(
+        p.UARTE1,
+        p.P0_00, // RX pin
+        p.P0_01, // TX pin
+        Irqs, // Interrupts for UARTE1
         config,
     );
 
@@ -76,6 +69,6 @@ async fn main(spawner: Spawner) {
         // 5. WAIT BEFORE SENDING AGAIN
         // We use a timer to create a delay between transmissions.
         // This simulates a real application where you might want to send data periodically.
-        Timer::after(core::time::Duration::from_secs(5)).await;
+        Timer::after(Duration::from_secs(5)).await;
     }
 }

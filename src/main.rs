@@ -49,8 +49,8 @@ async fn main(_spawner: Spawner) {
     // We initialize the UARTE peripheral with RX/TX pins and interrupt binding.
     let mut uart = Uarte::new(
         p.UARTE1,
-        p.P0_00, // RX pin
-        p.P0_01, // TX pin
+        p.P1_12, // RX pin (D7 on XIAO nRF52840 Sense)
+        p.P1_11, // TX pin (D6 on XIAO nRF52840 Sense)
         Irqs, // Interrupts for UARTE1
         config,
     );
@@ -62,6 +62,8 @@ async fn main(_spawner: Spawner) {
         // This method is async and will return immediately, allowing the CPU to do other work while the DMA handles the transmission.
         uart.write(LARGE_LOG_MESSAGE).await.unwrap();
 
+        defmt::info!("Large log message sent over UART using DMA!");
+        
         // 5. RESUME
 
         // When execution reaches this point, we know the DMA transmission is 100% complete.

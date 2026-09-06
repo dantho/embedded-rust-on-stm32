@@ -35,7 +35,7 @@ async fn main(_spawner: Spawner) {
 
     // 3. CONFIGURE THE UART WITH DMA
     // We set up the UART peripheral with the desired baud rate and settings.
-    let config = Config::default();
+    let config = Config::default(); // Default configuration is Baudrate::BAUD115200
 
     // We initialize the UARTE peripheral with RX/TX pins and interrupt binding.
     let mut uart = Uarte::new(

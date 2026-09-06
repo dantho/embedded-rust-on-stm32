@@ -62,6 +62,6 @@ async fn main(_spawner: Spawner) {
         // 5. WAIT BEFORE SENDING AGAIN
         // We use a timer to create a delay between transmissions.
         // This simulates a real application where you might want to send data periodically.
-        Timer::after(Duration::from_secs(5)).await;
+        Timer::after(Duration::from_secs(10)).await;
     }
 }
